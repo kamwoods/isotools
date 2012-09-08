@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wc-entries
+   xmlns="svn:">
+<entry
+   committed-rev="40"
+   name=""
+   committed-date="2008-06-02T19:30:08.397602Z"
+   url="svn+ssh://svp@troy.cs.indiana.edu/u/svp/Summer08/ISORead/trunk/python"
+   last-author="svp"
+   kind="dir"
+   uuid="23d0d120-4a4d-0410-8dc2-9793718f3a6a"
+   revision="40"/>
+<entry
+   committed-rev="32"
+   name="isomagic.py"
+   text-time="2008-06-03T19:15:40.000000Z"
+   committed-date="2008-05-28T20:54:43.626624Z"
+   checksum="485e04dd68b1d4ff7c2049353d7c6398"
+   last-author="svp"
+   kind="file"
+   prop-time="2008-06-03T19:15:40.000000Z"/>
+<entry
+   committed-rev="31"
+   name="isomd5.py"
+   text-time="2008-06-03T19:15:40.000000Z"
+   committed-date="2008-05-28T18:58:37.152656Z"
+   checksum="27d5d041bced75a14280da95d8049586"
+   last-author="svp"
+   kind="file"
+   prop-time="2008-06-03T19:15:40.000000Z"/>
+<entry
+   committed-rev="40"
+   name="isoextract_test.py"
+   text-time="2008-06-03T19:15:40.000000Z"
+   committed-date="2008-06-02T19:30:08.397602Z"
+   checksum="1fe1524c80edfab0440f85fb64e3553f"
+   last-author="svp"
+   kind="file"
+   prop-time="2008-06-03T19:15:40.000000Z"/>
+<entry
+   committed-rev="40"
+   name="isoextract.py"
+   text-time="2008-06-03T19:15:40.000000Z"
+   committed-date="2008-06-02T19:30:08.397602Z"
+   checksum="b62b887af442d766212a2e3cb7d1ba65"
+   last-author="svp"
+   kind="file"
+   prop-time="2008-06-03T19:15:40.000000Z"/>
+</wc-entries>

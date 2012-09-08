@@ -1,0 +1,132 @@
+##  A PYTHON FILE FOR EXTRACTING FILES FROM AN ISO9660 IMAGE
+
+import os, sys
+sys.path.insert(0, '/u/sjhoward/pycdio-0.13')
+import pycdio
+import iso9660
+import stat
+import string
+import pdb
+
+class ISOFileExtractError(Exception):
+	def __init__(self, s, e):
+		self.s = s 
+		self.e = e
+	def __str__(self):
+		return repr(self.s) + ': ' + self.e.__str__()	
+
+class ISOImageError(Exception):
+	def __init__(self, s):
+		self.s = s
+	def __str__(self):
+		return repr(self.s)
+
+class ISONullExtentError(Exception):
+	def __init__(self, s):
+		self.s = s
+	def __str__(self):
+		return repr(self.s)
+
+def ceil(x): return int(round(x+0.5))
+
+def bft_inner (iso, top = '/', depthfirst = True):
+	nodes = iso.readdir(top)
+	if not depthfirst:
+		yield top, nodes
+	for node in nodes:
+		st = iso.stat(top + node[0])
+		if st['is_dir']:
+			if not node[0] == '.' and not node[0] == '..':
+				for (newtop, children) in bft_inner (iso, top + node[0] + '/', depthfirst):
+					yield newtop, children
+        if depthfirst:
+		yield top, nodes
+
+def bft (iso, topdir):
+	flist = []
+	for (basepath, children) in bft_inner(iso, topdir, True):
+		for child in children:
+			if not iso.stat(basepath + child[0])['is_dir']:
+				flist.append(basepath + child[0])
+	return flist				
+
+def extract_file (iso, iso_imagename, iso_filename, extract_to='/u/kamwoods/PyISO/python/test'): 
+#	pdb.set_trace()
+	fullpath = os.path.join(extract_to, iso_filename.split('/')[-1])
+	if not iso.is_open():
+		raise ISOImageError('Error opening ' + iso_imagename + ' as an ISO image')
+		return
+
+	try:
+		statbuf = iso.stat(iso_filename, translate=True)
+	except Exception, e:
+		raise ISOFileExtractError('Error getting statbuf for ' + iso_filename, e) 
+		return
+	
+#	try:
+#		OUTPUT = os.open(fullpath, os.O_CREAT|os.O_WRONLY, 0664)	
+#		OUTPUT = os.open(iso_filename.split('/')[-1], os.O_CREAT|os.O_WRONLY, 0664)
+#	except Exception, e:
+#		raise ISOFileExtractError('Error opening local file ' + iso_filename.split('/')[-1], e)
+#		return
+
+	blocks=ceil(statbuf['size'] / pycdio.ISO_BLOCKSIZE)
+#	size_counter = 0
+	for i in range (blocks):
+		try:
+			lsn = statbuf['LSN'] + i
+			size, buf = iso.seek_read(lsn)
+#			size_counter += size
+#			os.write(OUTPUT, buf)
+		except Exception, e:
+			raise ISOFileExtractError('Error while copying disk sector ' + repr(lsn) + ' for ' + iso_filename, e)
+			return
+		if size <= 0:
+#			os.close(OUTPUT)
+			raise ISONullExtentError('Invalid read size ' + repr(size) + ' starting at LSN ' + repr(lsn))
+			return
+
+#	os.ftruncate(OUTPUT, statbuf['size'])
+#	os.close(OUTPUT)
+
+def main ():
+	if not len(sys.argv) > 2:	
+		iso_imagename = sys.argv[1]
+		iso = iso9660.ISO9660.IFS(iso_imagename)
+
+		f = open('extraction_error_log', 'a')
+		f.write('------BEGIN ERROR LIST FOR ' + iso_imagename + '------\n\n')
+
+                ilst = bft(iso, '/')
+
+		for i in ilst:	
+			try:
+				extract_file(iso, iso_imagename, i, extract_to='/u/kamwoods/PyISO/python/test/') 
+			except Exception, e:		
+				str = '  Error extracting ' + i + '\n  ' + e.__str__() + '\n'
+				f.write(str)	
+			else:
+				str = '  Successful extraction of ' + i + '\n'
+				f.write(str)
+
+		f.write('\n\n------END ERROR LIST FOR ' + iso_imagename + '------\n\n')
+
+		f.close()
+		iso.close()
+		sys.exit(0)
+	else:
+		iso_imagename = sys.argv[1]
+		iso_filename = sys.argv[2]
+		iso = iso9660.ISO9660.IFS(iso_imagename)
+		try:
+			extract_file(iso, iso_imagename, iso_filename)
+		except Exception, e:		
+			f = open('extraction_error_log', 'a')
+			str = 'IMAGE NAME: ' + iso_imagename + '\n  Unknown error extracting ' + iso_filename + '\n  ' + e.__str__() + '\n\n\n'
+			f.write(str)	
+
+		iso.close()
+		sys.exit(0)	
+	
+if __name__ == '__main__':
+	main()
